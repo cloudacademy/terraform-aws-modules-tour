@@ -43,14 +43,14 @@
     },
     {
       "file": "src/modules/ec2/outputs.tf",
-      "description": "The output block will allow the module to output the ID value of the EC2 so it can be passed through to other resources within a Terraform configuration. ",
-      "line": 1,
+      "description": "Click **Insert Code** to declare the `id` output variable:\n\n```js\noutput \"id\" {\n    description = \"id of EC2\"\n    value = aws_instance.server.id\n}\n```",
+      "line": 4,
       "title": "Output"
     },
     {
       "file": "src/modules/ec2/outputs.tf",
-      "description": "Click **Insert Code** to declare the `id` output variable:\n\n```js\noutput \"id\" {\n    description = \"id of EC2\"\n    value = aws_instance.server.id\n}\n```",
-      "line": 4,
+      "description": "The output block will allow the module to output the ID value of the EC2 so it can be passed through to other resources within a Terraform configuration. ",
+      "line": 1,
       "title": "Description"
     },
     {
@@ -60,21 +60,25 @@
     },
     {
       "file": "src/main.tf",
-      "description": "Click **Insert Code** to call your module:\n\n```js\nmodule \"webserver\" {\n    source = \"./modules/ec2\"\n    servername = \"calabvm\"\n    instance_size = \"t2.micro\"\n    subnet_id = aws_subnet.sub1.id\n    security_group_ids = [aws_vpc.prod.default_security_group_id]\n}\n\nresource \"aws_ec2_tag\" \"tags\" {\n  resource_id = module.webserver.id\n  key         = \"Environment\"\n  value       = \"Production\"\n}\n```",
+      "description": "Click **Insert Code** to call your module:\n\n```js\nmodule \"webserver\" {\n    source = \"./modules/ec2\"\n    servername = \"calabvm\"\n    instance_size = \"t2.micro\"\n    subnet_id = aws_subnet.sub1.id\n    security_group_ids = [aws_vpc.prod.default_security_group_id]\n}\n\n\n```",
       "line": 38,
-      "title": "Calling the Module"
+      "title": "Calling the Module",
+      "selection": {
+        "start": {
+          "line": 6,
+          "character": 19
+        },
+        "end": {
+          "line": 6,
+          "character": 26
+        }
+      }
     },
     {
       "file": "src/main.tf",
       "description": "To use the module within the Terraform configuration, the resource type is declared as a module type. The block label can be any name given to the module block. \n\nIn this example, it's `webserver`. The arguments that parametrize the module are included in the module block. The source argument defines the location of the module that is being used. In this case, it's within the child folders of the directory. \n\nNext, values for the variables that were declared in the `variables.tf` file can be defined. Notice that the `subnet_id` and `security_group_ids` arguments are passing referenced data from the `aws_vpc` and `aws_subnet` resources",
       "line": 34,
       "title": "Description"
-    },
-    {
-      "file": "src/main.tf",
-      "description": "Similar to the resource references of the VPC and Subnet resources, the module output `id` is used by calling the `module` block. \n\nThe value of `id` is declared from the `outputs.tf` file of the EC2 module. This is how modules can create data and pass it along to other resources",
-      "line": 39,
-      "title": "Tags"
     },
     {
       "directory": "src",
