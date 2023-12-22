@@ -1,0 +1,100 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Creating Reusable Infrastructure with Terraform Modules",
+  "steps": [
+    {
+      "title": "Introduction",
+      "description": "The `src` directory can be divided into the following sections:\n\n- `modules/`: Terraform modules that represent individual AWS resources\n- `main.tf`: Main Terraform configuration file that will call and configure AWS modules stored in `modules/`. In this lab, the AWS resource is an EC2 instance."
+    },
+    {
+      "file": "src/main.tf",
+      "description": "This **main.tf** file has the AWS provider configured, as well as an Amazon VPC and Amazon Subnet. In this lab, the EC2 instance is organized into a module. However, it's common for the Amazon VPC resource to also be configured as a reusable module.",
+      "line": 1,
+      "title": "Main Terraform File"
+    },
+    {
+      "directory": "src/modules/ec2",
+      "description": "The directory that stores your modules does not need to be named **modules**. The module directory and path to the EC2 module will be referenced in the `src/main.tf` file. \n\nThis module directory holds an **ec2** directory that contains the **main.tf**, **variables.tf**, and **outputs.tf** files you typically see in a Terraform configuration. \n\nThe difference is that these files are used to configure a specific AWS resource or set of related resources.",
+      "title": "Modules"
+    },
+    {
+      "file": "src/modules/ec2/main.tf",
+      "description": "Click **Insert Code** to paste in the following configuration for your EC2 module:\n\n```js\nterraform {\n  required_providers {\n    aws = {\n      source  = \"hashicorp/aws\"\n      version = \"5.8.0\"\n    }\n  }\n}\n\nresource \"aws_instance\" \"server\" {\n    ami           = \"ami-0d398eb3480cb04e7\"\n    instance_type = var.instance_size\n    monitoring = false\n    vpc_security_group_ids = var.security_group_ids\n    subnet_id = var.subnet_id          \n    root_block_device {\n        delete_on_termination = false\n        encrypted = true\n        volume_size = 20\n        volume_type = \"standard\"\n    }\n    tags = {\n        Name = var.servername\n    }\n}\n```",
+      "line": 25,
+      "title": "EC2 Module"
+    },
+    {
+      "file": "src/modules/ec2/main.tf",
+      "description": "The `aws_instance` defined in this file utilizes a combination of hard-coded and variable values. Each variable called in this definition is stored in the same parent directory as this **main.tf** file. (src/modules/ec2)\n\nThis contains the resource block for an EC2 Instance resource. It contains the EC2 standard configurations to be made into a module.  Also, notice that the required_providers block is specified. Because the AWS provider is updated so frequently, it's best practice to specify the version that your module is compatible with. Otherwise, different versions of the provider may not work with the module and cause issues.\n",
+      "line": 9,
+      "title": "EC2 Instance"
+    },
+    {
+      "file": "src/modules/ec2/variables.tf",
+      "description": "Click **Insert Code** to declare the variables for your EC2 instance module:\n\n```js\nvariable \"instance_size\" {\n    description = \"Size of the EC2 instance\"\n    type = string\n    default = \"t2.micro\"\n}\nvariable \"servername\" {\n    description = \"Name of the EC2 Instance tag\"\n    type = string\n}\nvariable \"subnet_id\" {\n    description = \"Subnet ID assigned to the EC2 Instance\"\n    type = string\n}\nvariable \"security_group_ids\" {\n    description = \"Security group IDs assigned to the EC2 Instance\"\n    type = list(string)\n}\n```",
+      "line": 17,
+      "title": "Variables"
+    },
+    {
+      "file": "src/modules/ec2/variables.tf",
+      "description": "The variables will be used as input for the module to enable the EC2 to be customized per environment. The module will take the input for subnet and security group IDs to allow the module to be deployed to various environments. This makes the module reusable since the environment isn't hardcoded into the Terraform configuration. ",
+      "line": 1,
+      "title": "Description"
+    },
+    {
+      "file": "src/modules/ec2/outputs.tf",
+      "description": "The output block will allow the module to output the ID value of the EC2 so it can be passed through to other resources within a Terraform configuration. ",
+      "line": 1,
+      "title": "Output"
+    },
+    {
+      "file": "src/modules/ec2/outputs.tf",
+      "description": "Click **Insert Code** to declare the `id` output variable:\n\n```js\noutput \"id\" {\n    description = \"id of EC2\"\n    value = aws_instance.server.id\n}\n```",
+      "line": 4,
+      "title": "Description"
+    },
+    {
+      "directory": "src/modules/ec2",
+      "description": "Now, the module has been completed. Remember, Terraform modules are just snippets of code that can be called from within other Terraform configurations. \n\nThink of it as how functions are used from a software development perspective. Functions are used to isolate actions or processes in code, which allows them to be tested, decoupled, and reused throughout the application. In Terraform, the concept is still the same, but they are called modules. ",
+      "title": "Completed Module"
+    },
+    {
+      "file": "src/main.tf",
+      "description": "Click **Insert Code** to call your module:\n\n```js\nmodule \"webserver\" {\n    source = \"./modules/ec2\"\n    servername = \"calabvm\"\n    instance_size = \"t2.micro\"\n    subnet_id = aws_subnet.sub1.id\n    security_group_ids = [aws_vpc.prod.default_security_group_id]\n}\n\nresource \"aws_ec2_tag\" \"tags\" {\n  resource_id = module.webserver.id\n  key         = \"Environment\"\n  value       = \"Production\"\n}\n```",
+      "line": 38,
+      "title": "Calling the Module"
+    },
+    {
+      "file": "src/main.tf",
+      "description": "To use the module within the Terraform configuration, the resource type is declared as a module type. The block label can be any name given to the module block. \n\nIn this example, it's `webserver`. The arguments that parametrize the module are included in the module block. The source argument defines the location of the module that is being used. In this case, it's within the child folders of the directory. \n\nNext, values for the variables that were declared in the `variables.tf` file can be defined. Notice that the `subnet_id` and `security_group_ids` arguments are passing referenced data from the `aws_vpc` and `aws_subnet` resources",
+      "line": 34,
+      "title": "Description"
+    },
+    {
+      "file": "src/main.tf",
+      "description": "Similar to the resource references of the VPC and Subnet resources, the module output `id` is used by calling the `module` block. \n\nThe value of `id` is declared from the `outputs.tf` file of the EC2 module. This is how modules can create data and pass it along to other resources",
+      "line": 39,
+      "title": "Tags"
+    },
+    {
+      "directory": "src",
+      "description": "Click the command below to run it in a terminal window:\n\n>> cd src && terraform init\n\nThe AWS provider and any modules are initialized, allowing them to be used when you run the `apply` command. Since the EC2 module is sourced locally within a child folder, it is not necessary to download the module. \n\nHowever, modules can be sourced from remote version control stores and would be downloaded during the initialization phase.",
+      "title": "Init"
+    },
+    {
+      "directory": "src",
+      "description": "Run the following command in the terminal to apply your changes and deploy your resources:\n\n>> terraform apply --auto-approve",
+      "title": "Apply"
+    },
+    {
+      "directory": "src",
+      "description": "The EC2 module has been used to deploy the EC2 instance. In this example, you created a module and stored it in a child folder. \n\nYou can also use other sources for modules like version control repositories like GitHub. HashiCorp also has a public module registry called the [Terraform Registry](https://registry.terraform.io/), which hosts community-made modules. ",
+      "title": "Registry"
+    },
+    {
+      "directory": "src",
+      "description": "You've successfully defined and deployed an Amazon EC2 module in Terraform.\n\nReturn to the Cloud Academy Lab browser tab and run the validation check associated with this lab step.",
+      "title": "Complete"
+    }
+  ]
+}
