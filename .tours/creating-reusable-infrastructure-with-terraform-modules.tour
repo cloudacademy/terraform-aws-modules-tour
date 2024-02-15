@@ -61,18 +61,8 @@
     {
       "file": "src/main.tf",
       "description": "Click **Insert Code** to call your module:\n\n```js\nmodule \"webserver\" {\n    source = \"./modules/ec2\"\n    servername = \"calabvm\"\n    instance_size = \"t2.micro\"\n    subnet_id = aws_subnet.sub1.id\n    security_group_ids = [aws_vpc.prod.default_security_group_id]\n}\n\n\n```",
-      "line": 38,
-      "title": "Calling the Module",
-      "selection": {
-        "start": {
-          "line": 6,
-          "character": 19
-        },
-        "end": {
-          "line": 6,
-          "character": 26
-        }
-      }
+      "line": 46,
+      "title": "Calling the Module"
     },
     {
       "file": "src/main.tf",
